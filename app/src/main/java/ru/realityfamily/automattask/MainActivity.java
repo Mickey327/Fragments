@@ -36,8 +36,8 @@ public class MainActivity extends FragmentActivity {
     AutomatFragments fragment4 = AutomatFragments.newInstance();
     List<Automat> automatList = new ArrayList<>();
     List<Student> studentList = new ArrayList<>();
-    /*Handler handler = new Handler(){
-        public void HandleMessage(Message msg){
+    Handler handler = new Handler(){
+        public void handleMessage(Message msg){
             switch(msg.getData().getInt("name")){
             case 1:
                 if (msg.getData().getString("status").equals(Automat.AutomatStatus.Waiting.toString())) {
@@ -101,7 +101,7 @@ public class MainActivity extends FragmentActivity {
                 break;
         }
             }
-        };*/
+        };
 
     /*FrameLayout container1;
     TextView autoName1;
@@ -255,13 +255,13 @@ public class MainActivity extends FragmentActivity {
 
         for(Student student : studentList) { //StartThread,StartTask
 
-            //student.CreateThread(handler);
-            //student.StartThread();
-            student.StartTask(); //  TODO: run треда
+            student.createThread(handler);
+            student.StartThread();
+            //student.StartTask(); //  TODO: run треда
         }
     }
     //TODO
-   public void UpdateData(Automat automat, Student student) {
+   /*public void UpdateData(Automat automat, Student student) {
         switch (automat.getName()){
             case 1:
                 if (automat.getStatus() == Automat.AutomatStatus.Waiting) {
@@ -324,26 +324,26 @@ public class MainActivity extends FragmentActivity {
                 }
                 break;
         }
-    }
+    }*/
   //TODO
-    public String CalculateQueue(int automatName) {
+    /*public String CalculateQueue(int automatName) {
         int queue = 0;
         for (Student student : studentList) {
             if (student.getAutomatName() == automatName && student.getTaskStatus() == AsyncTask.Status.RUNNING) queue++;
         }
         return queue - 1 > 0 ? queue - 1 + " человек" : "Людей больше нет.";
-    }
+    }*/
 
     public static MainActivity getInstance() {
         return instance;
     }
-    /*public String CalculateQueue(int automatName) {
+    public String CalculateQueue(int automatName) {
         int queue = 0;
         for (Student student : studentList) {
             if (student.getAutomatName() == automatName && student.getStudentThread().isAlive()) queue++;
         }
         return queue - 1 > 0 ? queue - 1 + " человек" : "Людей больше нет.";
-    }*/
+    }
 
 
 

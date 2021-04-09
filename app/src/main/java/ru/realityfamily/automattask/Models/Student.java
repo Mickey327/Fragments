@@ -1,6 +1,9 @@
 package ru.realityfamily.automattask.Models;
 
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,17 +16,20 @@ public class Student {
     private List<IProduct> cart = new ArrayList<>();
     private final int cartCount;
     private final Automat automat;
-
-    private StudentTask task;
+    private StudentThread thread;
+    //TODO
+    //private StudentTask task;
 
     public Student(int name, int cartCount, Automat automat) {
         this.name = "Студент №" + name;
         this.cartCount = cartCount;
         this.automat = automat;
-
-        this.task = new StudentTask(automat, this);
+        //TODO
+        //this.task = new StudentTask(automat, this);
     }
-
+    public void createThread(Handler handler){
+        thread = new StudentThread(automat,this,handler);
+    }
     public void ChooseProduct() throws InterruptedException {
         while (cart.size() < cartCount) {
             IProduct product = automat.GetProduct();
@@ -45,12 +51,15 @@ public class Student {
     public void PayForCart() throws InterruptedException {
         TimeUnit.SECONDS.sleep(2);
     }
-
-    public void StartTask() {
+    //TODO
+    /*public void StartTask() {
         if (task == null) return;
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }*/
+   public void StartThread() {
+        if (thread == null) return;
+        thread.start();
     }
-
     public String getName() {
         return name;
     }
@@ -62,11 +71,61 @@ public class Student {
     public int getAutomatName() {
         return automat.getName();
     }
+    class StudentThread extends Thread{
+        final Automat automat;
+        final Student student;
+        private Handler handler;
 
-    public AsyncTask.Status getTaskStatus() {
+        StudentThread(Automat automat, Student student,Handler handler) {
+            this.automat=automat;
+            this.student=student;
+            this.handler=handler;
+
+        }
+        public void run(){
+            synchronized (automat){
+                publishProgress(automat,student);
+                automat.setStatus(Automat.AutomatStatus.Client_Choosing);
+                publishProgress(automat,student);
+                try {
+                    student.ChooseProduct();
+                    publishProgress(automat,student);
+                    automat.setStatus(Automat.AutomatStatus.Client_Paying);
+                    publishProgress(automat,student);
+                    student.PayForCart();
+                    automat.setStatus(Automat.AutomatStatus.Giving_Products);
+                    publishProgress(automat,student);
+                    automat.GiveProducts();
+                    automat.setStatus(Automat.AutomatStatus.Waiting);
+                    publishProgress(automat,student);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+        }
+        public void publishProgress(Automat automat, Student student){
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("name", automat.getName());
+            bundle.putSerializable("status", automat.getStatus().toString());
+            bundle.putSerializable("client", student.getName());
+            bundle.putSerializable("cart", student.getCart().toString());
+            bundle.putSerializable("queue1", "= " + student.CartCost() + " у.е.");
+
+
+            Message msg = new Message();
+            msg.setData(bundle);
+            if (msg!=null){
+            handler.sendMessage(msg);}
+            }
+        }
+   public Thread getStudentThread() {return this.thread;}
+   //TODO
+    /*public AsyncTask.Status getTaskStatus() {
         return task.getStatus();
     }
-
+//TODO
     class StudentTask extends AsyncTask<Void, Void, Void> {
         final Automat automat;
         final Student student;
@@ -105,5 +164,5 @@ public class Student {
         protected void onProgressUpdate(Void... values) {
             MainActivity.getInstance().UpdateData(automat, student);
         }
-    }
+    }*/
 }
